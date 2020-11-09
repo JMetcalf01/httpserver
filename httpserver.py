@@ -45,6 +45,14 @@ def checkprint():
                 print(text, file=sys.stderr)
 
 
+# If any thread has finished, remove it from the list
+def checkthreads():
+    while True:
+        for thread in threads:
+            if not thread.is_alive():
+                threads.remove(thread)
+
+
 # Handles a single request from a specific client, then closes
 def handlerequest(clientsocket):
     # Attempts to receive message, terminating process if it times out
@@ -62,9 +70,9 @@ def handlerequest(clientsocket):
         except socket.error:
             pass
 
-    # If message is empty, terminate connection immediately
-    if len(message) == 0:
-        safeprint("Error: message is empty")
+    # If end of data is hit while waiting for more input, terminate connection immediately
+    if len(message) == 0 or "\r\n" not in message:
+        safeprint("Error: unexpected end of input")
         clientsocket.close()
         return
 
@@ -140,14 +148,6 @@ def handlerequest(clientsocket):
     clientsocket.close()
 
 
-# If any thread has finished, remove it from the list
-def checkthreads():
-    while True:
-        for thread in threads:
-            if not thread.is_alive():
-                threads.remove(thread)
-
-
 # BEGIN HERE
 
 # Determine command line arguments
@@ -169,15 +169,15 @@ serversocket.bind((servername, port))
 # Tell the OS this will be used as a passive socket (i.e., to receive incoming connections)
 serversocket.listen(maxrq)
 
-# Must keep track of every thread currently running something, and when they die
-threads = list()
-deathchecker = Thread(target=checkthreads, daemon=True)
-deathchecker.start()
-
 # Set up printer thread
 printqueue = Queue()
 printer = Thread(target=checkprint, daemon=True)
 printer.start()
+
+# Must keep track of every thread currently running something, and when they die
+threads = list()
+deathchecker = Thread(target=checkthreads, daemon=True)
+deathchecker.start()
 
 while True:
     # Block waiting for incoming connections, then prints information about new socket
@@ -194,5 +194,3 @@ while True:
         safeprint("Error: too many requests")
         connectionsocket.close()
         continue
-
-# TODO End of data while waiting for more input: "Error: unexpected end of input"

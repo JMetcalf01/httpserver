@@ -12,7 +12,7 @@ clientSocket = socket(AF_INET, SOCK_STREAM)
 clientSocket.connect((serverName, serverPort))
 
 # Sleep for too long, so it times out
-sleep(3.1)
+sleep(2)
 
 # Send a request
 request = "GET /test.txt HTTP/1.0\r\nX-additional-wait: " + str(2) + "\r\n\r\n"
