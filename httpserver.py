@@ -5,6 +5,9 @@ import socket
 import time
 from threading import Thread
 
+# Implementation of a simple multithreaded web server in Python that can serve HTTP requests
+# Written by Jonathan Metcalf
+
 # Set defaults for variables
 errmsg = 'HTTP/1.1 404 NOT FOUND\r\n\r\n'
 response10 = 'HTTP/1.0 200 OK\r\n\r\n'
